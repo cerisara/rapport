@@ -2,21 +2,27 @@ import numpy as np
 import re
 import pandas as pd
 from nltk.corpus import stopwords
+import sklearn
 from collections import Counter
 from nltk.tokenize import word_tokenize
 import collections
- 
+from sklearn.model_selection import train_test_split
 
-data=pd.read_csv("Tweets.csv")
-  
+data=pd.read_csv('Tweets.csv')
+data= data.copy()[['airline_sentiment', 'text']]
+# remove the punction and stopwords
 def review_to_words( review ):
     review_text = review
-    no_punctions = re.sub("[^a-zA-Z]", " ", review_text) 
+    no_hasthtags = re.sub("#\w+", " ", review_text)
+    no_url = re.sub("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", " ", no_hasthtags )
+    no_tag = re.sub("@\w+", " ", no_url)
+    no_punctions = re.sub("[^a-zA-Z]", " ", no_tag) 
     wordslower= no_punctions.lower()
     words = word_tokenize(wordslower)  
     stopswd = set(stopwords.words("english"))                  
     meaningful_wd = [w for w in words if not w in stopswd]
     return(meaningful_wd)
+
 
 Posdata_list = []
 Negdata_list = []

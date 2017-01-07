@@ -2,16 +2,21 @@ import numpy as np
 import re
 import pandas as pd
 from nltk.corpus import stopwords
-from sklearn.model_selection import train_test_split
+import sklearn
 from collections import Counter
 from nltk.tokenize import word_tokenize
 import collections
-data=pd.read_csv("Tweets.csv")
+from sklearn.model_selection import train_test_split
+
+data=pd.read_csv('Tweets.csv')
 data= data.copy()[['airline_sentiment', 'text']]
 # remove the punction and stopwords
 def review_to_words( review ):
     review_text = review
-    no_punctions = re.sub("[^a-zA-Z]", " ", review_text) 
+    no_hasthtags = re.sub("#\w+", " ", review_text)
+    no_url = re.sub("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", " ", no_hasthtags )
+    no_tag = re.sub("@\w+", " ", no_url)
+    no_punctions = re.sub("[^a-zA-Z]", " ", no_tag) 
     wordslower= no_punctions.lower()
     words = word_tokenize(wordslower)  
     stopswd = set(stopwords.words("english"))                  
@@ -28,11 +33,14 @@ data['text'] = clean_text
 
 def cross_validation(cv=10, avg=True):
 	k = [int((len(data['text']))/cv*j) for j in range(cv+1)]
+#k=[0, 1464, 2928, 4392, 5856, 7320, 8784, 10248, 11712, 13176, 14640]
+#We devide 14640 Tweets into 10 piles. 
         o=0
-        for t in range (0,10):
+        for t in range (0,10):# 10-fold CV
                 print t
+                X_test, y_test= data['text'][k[t]:k[t+1]], data['airline_sentiment'][k[t]:k[t+1]]
+#we choose the 10% of the data as the test data, and the other 90% of the data as the traing data
 		X_train, y_train = pd.concat([data['text'][:k[t]],data['text'][k[t+1]:]]), pd.concat([data['airline_sentiment'][:k[t]],data['airline_sentiment'][k[t+1]:]])
-		X_test, y_test= data['text'][k[t]:k[t+1]], data['airline_sentiment'][k[t]:k[t+1]]
 # d is the number of words in positive text,I remember d= 16650
 # e is the number of words in negative text,I remember e= 80297
 # f is is the number of words in neutral text,I remember f= 21642
@@ -121,15 +129,16 @@ def cross_validation(cv=10, avg=True):
 
 		r = Counter(compare)
 		accuracy = float(r['correct'])/(r['correct']+r['incorrect'])
-		print accuracy
+                print ("accuracy:",accuracy)
                 o=o+accuracy
 
                 for z in range(0,len(classification)):
                     if classification[z] == y_test.tolist()[z]:
                                 u=u+1
-                print u
+                print ("number of correct predict Tweet in traing data:",u)      
         return o/10
 
 avg_score = [cross_validation(avg=True,cv=10)]
+print "average accuracy is"
 print(avg_score)
 
