@@ -135,7 +135,7 @@ def cross_validation(cv=10, avg=True):
                 for z in range(0,len(classification)):
                     if classification[z] == y_test.tolist()[z]:
                                 u=u+1
-                print ("number of correct predict Tweet in traing data:",u)      
+                print ("number of correct predict Tweet in testing data:",u)      
         return o/10
 
 avg_score = [cross_validation(avg=True,cv=10)]
