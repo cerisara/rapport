@@ -36,15 +36,14 @@ def cross_validation(cv=10, avg=True):
 #k=[0, 1464, 2928, 4392, 5856, 7320, 8784, 10248, 11712, 13176, 14640]
 #We devide 14640 Tweets into 10 piles. 
         o=0
-        for t in range (0,10):# 10-fold CV
+        for t in range (cv):# 10-fold CV
                 print t
                 X_test, y_test= data['text'][k[t]:k[t+1]], data['airline_sentiment'][k[t]:k[t+1]]
 #we choose the 10% of the data as the test data, and the other 90% of the data as the traing data
 		X_train, y_train = pd.concat([data['text'][:k[t]],data['text'][k[t+1]:]]), pd.concat([data['airline_sentiment'][:k[t]],data['airline_sentiment'][k[t+1]:]])
 # d is the number of words in positive text,I remember d= 16650
 # e is the number of words in negative text,I remember e= 80297
-# f is is the number of words in neutral text,I remember f= 21642
-                t=t+1	
+# f is is the number of words in neutral text,I remember f= 21642	
                 u=0
 		a=0
 		b=0
@@ -82,17 +81,9 @@ def cross_validation(cv=10, avg=True):
 		voctot.update(coneu3)
 		nvoctot=len(voctot)
 #calcul the number d,e,f
-		for i in range(0, len(pos_words)):
-		       for w in pos_words[i]:
-                		d=d+1
-
-		for i in range(0, len(neg_words)):
-		       for w in neg_words[i]:
-             		   e=e+1
-
-		for i in range(0, len(neu_words)):
-		       for w in neu_words[i]:
-		                f=f+1
+                d=sum(len(x) for x in pos_words)
+                e=sum(len(x) for x in neg_words)
+                f=sum(len(x) for x in neu_words)
 		print("nmots pos neg neu",d,e,f)
 #then I predict the result of Testing data
 # the result of predicting including positive,negative and neutral
@@ -128,14 +119,14 @@ def cross_validation(cv=10, avg=True):
 		                compare.append(value)
 
 		r = Counter(compare)
-		accuracy = float(r['correct'])/(r['correct']+r['incorrect'])
+		accuracy = float(r['correct'])/float(r['correct']+r['incorrect'])
                 print ("accuracy:",accuracy)
                 o=o+accuracy
 
                 for z in range(0,len(classification)):
                     if classification[z] == y_test.tolist()[z]:
                                 u=u+1
-                print ("number of correct predict Tweet in testing data:",u)      
+                print ("number of correct predict Tweet in traing data:",u)      
         return o/10
 
 avg_score = [cross_validation(avg=True,cv=10)]
