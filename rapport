@@ -1,0 +1,162 @@
+
+# **Rapport de projet **
+
+[TOC]
+
+
+
+### 1) Introduction
+Dans le rapport suivant, nous allons présenter le travail que nous avons réalisé avec l'aide de M. Christophe Cerisara, chercheur au LORIA (http://www.loria.fr/fr/).
+Ce rapport de mi-parcours présente notre travail d'analyse de sentiments sur Twitter utilisant le classifieur Naïve Bayes. Les données considérées sont Twitter US Airline Sentiment disponibles sur kaggle (https://www.kaggle.com/crowdflower/twitter-airline-sentiment) et permettent d'analyser comment les voyageurs en février 2015 ont exprimé leur sentiments sur Twitter. 
+
+###2) Pré-traitement
+
+La première tache de notre projet a consisté à réaliser un prétraitement des données afin de pouvoir les traiter par la suite.
+Pour cela il a fallu enlever du set de données des "mots" parasites comme les hashtags, les tags ou encore les url contenus dans les tweets. Le prétraitement a aussi consisté en une suppression de la ponctuation et d'une normalisation des mots en les réécrivant tous en lettres minuscules. Nous avons aussi supprimé de la base de données les "stopwords", mots très courants n'ayant pas un sens à part entière.
+Le principal problème que nous avons eu était un reste de données parasites dû à l'oubli de la suppression des hashtags et des url.
+Le travail a été réalisé à l'aide d'un traitement d'expressions régulières (bibliothèque re en python), et notre prétraitement a finalement été efficace puisqu'en regardant les données retournées et en les comparant aux tweets d'origine, nous avions bien ce à quoi nous nous attendions.
+
+
+### 3) Le classifieur Naïve Bayes
+
+Notre projet utilise le classifieur Naïve Bayes qui est un algorithme d'apprentissage qui permet de calculer la probabilité qu'un mot appartienne à une certaine classe en appliquant le **théorème de Bayes**.
+
+L'avantage du classifieur Naïve Bayes est qu'il requiert relativement peu de données d'entraînement pour estimer les paramètres nécessaires à la classification, à savoir moyennes et variances des différentes variables. En effet, l'hypothèse **d'indépendance des variables** permet de se contenter de la variance de chacune d'entre elle pour chaque classe, sans avoir à calculer de matrice de covariance.
+
+
+#### 3.1) Le modèle de Naïve Bayes
+
+Nous traitons nos données de Twitter comme des vecteurs et puis nous utilisons ces vecteurs pour commecer la classification de sentiments. 
+
+Pour notre projet, on classifie les Tweets par leur sentiment (positif, négatif ou neutre). On imagine que les documents proviennent d'un certain nombre de classes de documents, lesquelles peuvent être définies comme des ensembles de mots dans lesquels la probabilité (indépendante) que le i-ième mot d'un document donné soit présent dans un document de la classe de sentiment S peut s'écrire : $$P( w_{i}|S)$$ 
+dans la condition où les Tweets 
+$$ {w_1, w_2,..., w_n} $$
+appartiennent aux sentiments S
+$$ S_{positif}, S_{négatif}, S_{neutre} .$$
+
+On suppose que les mots sont distribués au hasard dans le document, donc qu'ils ne dépendent ni de la longueur du document, ni de leur position respective à l'intérieur du document relativement à d'autres mots, ou autre contexte du document.
+
+On écrit donc la probabilité d'un Tweet, étant donné une de la classe de sentiment S,
+
+$$ P(Tweet|S_{j})=\prod_i P(w_i|S_j)$$
+
+Le théorème de Bayes nous permet d'inférer la probabilité
+
+$$ P(S_{j}|Tweet)=P(S_j)\prod_i P(w_i|S_j)$$
+On a :
+$$ P(S_{j})=\frac{Tweets(S_j)}{\sum_{S_j \in S} Tweets(S_j)}$$
+Et,
+$$ P(w_i|S_{j})=\frac{nombre(w_i|S_j)}{\sum_{i=1}^n nombre(w_i|S_j)}$$
+
+En utilisant les logarithmes, on obtient : 
+$$\ln P(S_j|Tweet)=\ln P(S_j)+\sum_i \ln P(w_i|S_j) $$
+Le tweet peut donc être classifié comme suit : 
+$$S_{predict}=\arg \max_{S_j \in S}(P(S_j) \prod_{i=1}^n P(w_i |S_j))$$ 
+
+
+
+
+
+#### 3.2) Le smoothing de Laplace
+
+Si le mot wi n’existe pas dans l’ensemble d’entraînement, on aura
+$$P(w_i|S_j)=0$$
+ ce qui peut causer des erreurs dans la classification . Pour éviter ce phénomène, on utilise la méthode de **smoothing de Laplace**. 
+
+Le smoothing de Laplace est une méthode de Smoothing pour éviter la situation de la probabilité égale 0. On va souvent faire +1 dans la méthode de smoothing de Laplace. 
+
+On va donc modifier modifier la formule comme suit :
+$$P(w_i|S_j)=\frac{nombre(w_i|S_j)+\delta}{\sum_{i=1}^n nombre(w_i|S_j)+V}$$
+Où $$\delta=1$$ et V est le nombre de tous les mots dans les données.
+On calcule ensuite le sentiment prédit pour estimer la classification de Tweet.
+
+#### 3.3) Résumé pour le modèle de Naïve Bayes
+Malgré le modèle de Naïve Bayes et ses hypothèses de base extrêmement simplistes, les classifieurs bayésiens naïfs ont fait preuve d'une efficacité plus que suffisante dans beaucoup de situations réelles complexes. 
+Via notre projet, on voit qu'il est efficace dans le domaine de traitement automatique du langage naturel.
+
+### 4) Expérimentation et résultats
+On utilise Python pour réaliser le modèle de Naïve Bayes car python est un langage nmulti-paradigme et multiplateformes
+#### 4.1) Les données
+Nous utilisons les données de Twitter US Airline Sentiment sur https://www.kaggle.com. 
+Les données contiennent 11712 rangs de critiques dans Twitter sur le sujet de US Airline Sentiment. Il y a 1919 rangs de critiques positives, 7308 de critiques negatives et 2485 de critique neutres. 
+
+Les colonnes contiennent tweet_id, airline_sentiment, airline_sentiment_confidence, negativereason, negativereason_confidence, airline, airline_sentiment_gold, name, negativereason_gold, retweet_count, text, tweet_coord, tweet_created, tweet_location, user_timezone.
+
+ Le airline_sentiment pour chaque Tweets est le marquages manuel, qui est divisé en positif, négatif et neutre.
+#### 4.2) Évaluation
+##### 4.2.1. Précision
+On utilise la précision pour évaluer la performance de l’algorithme.
+Pour calculer la précision, on utilise et on compare les prédictions correctes (Elément de la classe S correctement prédits) et les prédictions incorrectes ( Eléments de la classe S mal prédits).
+La précision est égale à : 
+$$Précision=\frac{correct}{incorrect+correct} $$
+
+##### 4.2.2 Validation croisée
+Pour notre project, nous utilisons le 10-fold cross-validation. La validation croisée est une méthode d’estimation de fiabilité d’un modèle fondé sur une technique d’échantillonnage.
+>**Étape 1 – Division entraînement test**
+On divise les données en deux sous-ensembles: l’ensemble d’entraînement (90%) et l’ensemble de test(10%). On entraîne notre algorithme sur l’ensemble d’entraînement
+et on teste notre algorithme sur l’ensemble de test.
+**Étape 2 – Validation croisée à 10 plis**
+On procède à l’apprentissage sur un ensemble et au test sur les 10-1 ensembles restants, et ce 10 fois. On compare ensuite les moyennes des indicateurs sur les ensembles d’entraînement et de test pour savoir si le modèle sur-apprend.
+#### 4.3) Résultats
+##### 4.3.1. Précision
+Voici un tableau de 10 précisions de la cross-validation 10 : 
+
+| 1 | 2 | 3   |4|5|6|7|8|9|10
+| :------- | ----: | :---: |
+| 59,4% | 71,0% |  64,8%|51,4%|41,3%|46,5%|74,3%|76,0%|65,6%|77,0%    |
+La précision moyenne est de **63%**.
+
+#####4.3.2. Les mots caractéristiques 
+On calcule les mots caractéristiques à l'aide du 
+$$argmax_{w_i} P(w_i|S_j)$$
+
+On obtient : 
+| Les 20 mots les plus positifs | Les 20 mots les plus négatifs | Les 20 mots les plus neutres
+| :------- | ----: | :---: |
+| thanks | flight |  flight
+|
+|thank|get|get
+|
+|flight|cancelled|please
+|
+|great|service|help
+|
+|service|hours|flights
+|
+|love|hold|need
+|
+|get|customer|thanks
+|
+|customer|help|dm
+|
+|guys|time|would
+|
+|much|plane|us
+|
+|good|amp|tomorrow
+|
+|best|delayed|fleek
+|
+|got|us|know
+|
+|awesome|still|fleet
+|
+|time|call|cancelled
+|
+|us|hour|time
+|
+|help|flightled|amp
+|
+|today|one|way
+|
+|amp|bag|change
+|
+|airline|flights|one
+### 5) Conclusion
+Dans notre projet, nous utilisons une méthode de machine learning pour classifer des sentiments à partir de Tweets. Nous nous concentrons dans un premier temps sur un algorithme de Naïve Bayes et nous remarquons que c’est un algorithme efficace et utile sur un dataset qui n’est pas très grand comme le USA airline sur Kaggle. Pour la recherche future, nous nous intéresserons aux réseaux nerveux et nous comparerons la différence entre chaque méthode. 
+### Bibliographie
+https://blogs.msdn.microsoft.com/mlfrance/2014/08/05/evaluer-un-modle-en-apprentissage-automatique/
+https://fr.wikipedia.org/wiki/Classification_na%C3%AFve_bay%C3%A9sienne
+https://fr.wikipedia.org/wiki/Validation_crois%C3%A9e
+https://docs.python.org/2/library/re.html
+> Written with [StackEdit](https://stackedit.io/).
