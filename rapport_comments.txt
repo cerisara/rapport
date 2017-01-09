@@ -1,0 +1,38 @@
+Format du rapport: il est bien, mais ca serait encore mieux si vous "amélioriez" un peu le format du Markdown pour le rendre plus facilement compatible avec d'autres outils standards de conversion que stackedit.io. Je pense par exemple à pandoc, qui permet de convertir votre rapport en latex, en libreoffice, ou en html, et qui offre donc plus de possibilités de conversion que stackedit.io. Essayez donc d'ajouter dans votre github un script de conversion avec pandoc vers du html self-contained et du latex, et vérifiez régulièrement que votre fichier markdown d'origine "passe bien" à la conversion.
+
+Introduction: Dans votre rapport final, il faudra un vrai chapitre d'intro, avec présentation de la problématique, des objectifs, de l'état de l'art, du plan, des contribution...
+
+Entre l'intro et le pré-traitement, il manque une section sur l'architecture générale permettant de résoudre le problème, qui justifie entre autre le besoin d'un pré-traitement.
+
+Pré-traitement:
+- illustrez avec des exemples, listez vos regex
+- stopwords = mots-outils
+
+Classifieur Naive Bayes:
+- ce n'est pas un algo, mais un modèle
+- dans votre cas, les paramètres ne sont pas des moyennes/variance, car vos variables sont discrètes !
+
+3.1: 
+- décrivez les vecteurs observés
+- Eq P(S|Tweet) fausse: ce n'est pas egal, c'est proportionnel (idem pour les log)
+- Eq P(S)=... utilisez un autre indice au denominateur
+- dire que la formule de P(w|S) vient d'une estimation d'une distrib multinomiale au sens du maximum de vraisemblance
+
+sec 3.3: la mettre après les expériences
+
+4.2.1: votre definition de "correct" vs. "incorrect" est trop "vague".
+Votre equation ne ressemble pas a une precision, mais bien a une accuracy.
+Vu que les classes ne sont pas excessivemnet desequilibrees, je vous conseille d'evaluer avec l'accuracy.
+C'est possible aussi en mode "detection", avec une precision/rappel, mais c'est plus complexe.
+
+4.2.2:
+- justifiez la validation croisee par la petite taille du corpus + la reduction de l'intervalle de confiance des resultats
+- precisez que les 10 ensembles de test doivent etre independants = non-recouvrants
+
+4.3.2:
+interessant. Mais "flight" est en tete des 3 colonnes: pourquoi ? Comment obtenir les mots les plus *discriminants* par categorie ?
+
+5:
+"reseaux nerveux" il devait etre tard...
+
+
